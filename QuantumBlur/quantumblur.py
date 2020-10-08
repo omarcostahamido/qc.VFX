@@ -364,7 +364,7 @@ def aheight2circuit(height, log=False, eps=1e-2):
             given height dictionary.
     """
     # get bit strings for the grid
-    Lx,Ly = height.shape()
+    Lx,Ly = height.shape
     grid, n = make_grid(Lx,Ly)
 
     # create required state vector
