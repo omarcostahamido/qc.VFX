@@ -16,4 +16,4 @@ python3 get-pip.py
 python3 -m pip install --user --upgrade pip
 
 # install requirements
-python3 -m pip install -r "(reqs)" --target="(target)"
+python3 -m pip install -r "C:/Users/Omar/Documents/GitHub/qc.VFX/base_quantumblur/requirements.txt" --target="C:/Users/Omar/Documents/GitHub/qc.VFX/Dep/python"

@@ -14,7 +14,7 @@
 
 
 """
-The imports that follow are highly non-standard and require some explanation.
+The imports that follow are highly non-standard and require some explanation. 
 
 This file is designed to run in both a modern, fully functioning Python
 environment, with Python 3.x and the ability to use external libraries.
@@ -54,16 +54,16 @@ except:
     from microqiskit import QuantumCircuit, simulate
     simple_python = True
 
-
+    
 # this is overwritten by the PIL class if available
 class Image():
     """
     A minimal reimplementation of the the PIL Image.Image class, to allow all
     image based tools to function even when only the standard library is
     available.
-
+    
     To initialize an Image oject, use the `newimage` function.
-
+    
     Attributes:
         mode (str): If L, pixel values are a single integer. If 'RGB', they
             are a tuple of three integers.
@@ -101,7 +101,7 @@ class Image():
     def resize(self, new_size, method):
         print("This functionality has not been implemented.")
 
-# this is overwritten by the PIL function if available
+# this is overwritten by the PIL function if available               
 def newimage(mode, size):
     """
     A minimal reimplementation of the the PIL Image.new function.
@@ -169,7 +169,7 @@ def _circuit2probs(qc):
         ket = quantum_info.Statevector(initial_ket)
         ket = ket.evolve(new_qc)
         probs = ket.probabilities_dict()
-
+    
     return probs
 
 
@@ -217,17 +217,17 @@ def make_line ( length ):
     Creates a list of bit strings of at least the given length, such
     that the bit strings are all unique and consecutive strings
     differ on only one bit.
-
+    
     Args:
         length (int): Required length of output list.
-
+    
     Returns:
         line (list): List of 2^n n-bit strings for n=⌊log_2(length)⌋
     """
-
+    
     # number of bits required
     n = int(math.ceil(math.log(length)/math.log(2)))
-
+    
     # iteratively build list
     line = ['0','1']
     for j in range(n-1):
@@ -239,17 +239,17 @@ def make_line ( length ):
         # and a '1' for the second half
         for j in range(int(float(len(line))/2),int(len(line))):
             line[j] += '1'
-
+            
     return line
 
 
 def normalize(ket):
     """
     Normalizes the given statevector.
-
+    
     Args:
         ket (list or array_like)
-
+    
     Returns:
         ket (list or array_like)
     """
@@ -265,37 +265,37 @@ def make_grid(Lx,Ly=None):
     """
     Creates a dictionary that provides bit strings corresponding to
     points within an Lx by Ly grid.
-
+    
     Args:
         Lx (int): Width of the lattice (also the height if no Ly is
             supplied).
         Ly (int): Height of the lattice if not Lx.
-
+    
     Returns:
         grid (dict): Dictionary whose values are points on an
             Lx by Ly grid. The corresponding keys are unique bit
             strings such that neighbouring strings differ on only
             one bit.
         n (int): Length of the bit strings
-
+        
     """
     # set Ly if not supplied
     if not Ly:
         Ly = Lx
-
+    
     # make the lines
     line_x = make_line( Lx )
     line_y = make_line( Ly )
-
+    
     # make the grid
     grid = {}
     for x in range(Lx):
         for y in range(Ly):
             grid[ line_x[x]+line_y[y] ] = (x,y)
-
+            
     # determine length of the bit strings
     n = len(line_x[0]+line_y[0])
-
+            
     return grid, n
 
 
@@ -303,13 +303,13 @@ def height2circuit(height, log=False, eps=1e-2):
     """
     Converts a dictionary of heights (or brightnesses) on a grid into
     a quantum circuit.
-
+    
     Args:
         height (dict): A dictionary in which keys are coordinates
             for points on a grid, and the values are positive numbers of
             any type.
         log (bool): If given, a logarithmic encoding is used.
-
+            
     Returns:
         qc (QuantumCircuit): A quantum circuit which encodes the
             given height dictionary.
@@ -317,7 +317,7 @@ def height2circuit(height, log=False, eps=1e-2):
     # get bit strings for the grid
     Lx,Ly = _get_size(height)
     grid, n = make_grid(Lx,Ly)
-
+    
     # create required state vector
     state = [0]*(2**n)
     if log:
@@ -337,8 +337,8 @@ def height2circuit(height, log=False, eps=1e-2):
             else:
                 state[ int(bitstring,2) ] = math.sqrt( h )
     state = normalize(state)
-
-    # define and initialize quantum circuit
+        
+    # define and initialize quantum circuit            
     qc = QuantumCircuit(n)
     if simple_python:
         # microqiskit style
@@ -349,60 +349,13 @@ def height2circuit(height, log=False, eps=1e-2):
 
     return qc
 
-def aheight2circuit(height, log=False, eps=1e-2):
-    """
-    Converts a 2d array of heights (or brightnesses) on a grid into
-    a quantum circuit.
-
-    Args:
-        height (np.array): A numpy 2d array of float32 in which indices are
-            coordinates for points on a grid, and the values are np.float32
-        log (bool): If given, a logarithmic encoding is used.
-
-    Returns:
-        qc (QuantumCircuit): A quantum circuit which encodes the
-            given height dictionary.
-    """
-    # get bit strings for the grid
-    Lx,Ly,_ = height.shape
-    grid, n = make_grid(Lx,Ly)
-
-    # create required state vector
-    state = [0]*(2**n)
-    if log:
-        # normalize heights
-        max_h = np.amax(height)
-        height = np.divide(height, max_h)
-        # find minimum (not too small) normalized height
-        min_h = np.float32(min(x for x in np.nditer(height) if x > eps))
-        # this minimum value defines the base
-        base = 1.0/min_h
-    for bitstring in grid:
-        (x,y) = grid[bitstring]
-        h = height[x,y]
-        if log:
-            state[ int(bitstring,2) ] = math.sqrt(base**(float(h)/min_h))
-        else:
-            state[ int(bitstring,2) ] = math.sqrt( h )
-    state = normalize(state)
-
-    # define and initialize quantum circuit
-    qc = QuantumCircuit(n)
-    if simple_python:
-        # microqiskit style
-        qc.initialize(state)
-    else:
-        qc.initialize(state,range(n))
-    qc.name = '('+str(Lx)+','+str(Ly)+')'
-
-    return qc
 
 def probs2height(probs, size=None, log=False):
     """
     Extracts a dictionary of heights (or brightnesses) on a grid from
     a set of probabilities for the output of a quantum circuit into
     which the height map has been encoded.
-
+    
     Args:
         probs (dict): A dictionary with results from running the circuit.
             With bit strings as keys and either probabilities or counts as
@@ -411,13 +364,13 @@ def probs2height(probs, size=None, log=False):
             the size is deduced from the number of qubits (assuming a
             square image).
         log (bool): If given, a logarithmic decoding is used.
-
+            
     Returns:
         height (dict): A dictionary in which keys are coordinates
             for points on a grid, and the values are floats in the
             range 0 to 1.
     """
-
+    
     # get grid info
     if size:
         (Lx,Ly) = size
@@ -425,14 +378,14 @@ def probs2height(probs, size=None, log=False):
         Lx = int(2**(len(list(probs.keys())[0])/2))
         Ly = Lx
     grid,_ = make_grid(Lx,Ly)
-
+    
     # set height to probs value, rescaled such that the maximum is 1
-    max_h = max( probs.values() )
+    max_h = max( probs.values() )   
     height = {(x,y):0.0 for x in range(Lx) for y in range(Ly)}
     for bitstring in probs:
         if bitstring in grid:
             height[grid[bitstring]] = float(probs[bitstring])/max_h
-
+         
     # take logs if required
     if log:
         min_h = min([height[pos] for pos in height if height[pos] !=0])
@@ -443,27 +396,27 @@ def probs2height(probs, size=None, log=False):
                 height[pos] = max(math.log(height[pos]/min_h)/math.log(base),0)
             else:
                 height[pos] = 0.0
-
+                        
     return height
 
-
+    
 def circuit2height(qc, log=False):
     """
     Extracts a dictionary of heights (or brightnesses) on a grid from
     the quantum circuit into which it has been encoded.
-
+    
     Args:
         qc (QuantumCircuit): A quantum circuit which encodes a height
             dictionary. The name attribute should hold the size of
             the image to be created (as a tuple cast to a string).
         log (bool): If given, a logarithmic decoding is used.
-
+            
     Returns:
         height (dict): A dictionary in which keys are coordinates
             for points on a grid, and the values are floats in the
             range 0 to 1.
     """
-
+    
     probs = _circuit2probs(qc)
     return probs2height(probs, size=eval(qc.name), log=log)
 
@@ -507,10 +460,10 @@ def combine_circuits(qc0,qc1):
             combined_qc.initialize(ket)
         else:
             combined_qc.initialize(ket,range(num_qubits))
-
+    
     # prevent circuit name from being used for size determination
     combined_qc.name = 'None'
-
+            
     return combined_qc
 
 
@@ -520,7 +473,7 @@ def partialswap(combined_qc, fraction):
     sized circuits combined in parallel) by the given fraction.
     """
     num_qubits = int(combined_qc.num_qubits/2)
-
+    
     if not simple_python:
         U = np.array([
         [1, 0, 0, 0],
@@ -538,9 +491,9 @@ def partialswap(combined_qc, fraction):
         else:
             combined_qc.cx(q1,q0)
             combined_qc.crx(math.pi*fraction,q0,q1)
-            combined_qc.cx(q1,q0)
+            combined_qc.cx(q1,q0)  
 
-
+            
 def probs2marginals(combined_qc, probs):
     """
     Given a probability distribution corresponding to a given combined
@@ -548,7 +501,7 @@ def probs2marginals(combined_qc, probs):
     this function returns the two marginals for each subcircuit.
     """
     num_qubits = int(combined_qc.num_qubits/2)
-
+    
     marginals = [{},{}]
     for string in probs:
         substrings = [string[0:num_qubits], string[num_qubits::]]
@@ -557,7 +510,7 @@ def probs2marginals(combined_qc, probs):
                 marginals[j][substring] += probs[string]
             else:
                 marginals[j][substring] = probs[string]
-
+    
     return marginals
 
 
@@ -565,35 +518,35 @@ def swap_heights(height0, height1, fraction, log=False, ):
     """
     Given a pair of height maps for the same sized grid, a set of partial
     swaps is applied between corresponding qubits in each circuit.
-
+    
     Args:
         height0, height1 (dict): Dictionaries in which keys are coordinates
             for points on a grid, and the values are floats in the range 0
             to 1.
         fraction (float): Fraction of swap gates to apply.
         log (bool): If given, a logarithmic decoding is used.
-
+            
     Returns:
         new_height0, new_height1 (dict): As with the height inputs.
     """
 
     assert _get_size(height0)==_get_size(height1), \
-    "Objects to be swapped are not the same size"
-
+    "Objects to be swapped are not the same size"   
+    
     # set up the circuit to be run
     circuits = [height2circuit(height) for height in [height0,height1]]
     combined_qc = combine_circuits(circuits[0], circuits[1])
     partialswap(combined_qc, fraction)
-
+    
     # run it an get the marginals for each original qubit register
-    p = _circuit2probs(combined_qc)
-    marginals = probs2marginals(combined_qc, p)
-
+    p = _circuit2probs(combined_qc)           
+    marginals = probs2marginals(combined_qc, p)     
+    
     # convert the marginals to heights
     new_heights = []
     for j,marginal in enumerate(marginals):
         new_heights.append( probs2height(marginal,size=eval(circuits[j].name),log=log) )
-
+        
     return new_heights[0], new_heights[1]
 
 
@@ -631,12 +584,12 @@ def swap_images(image0, image1, fraction, log=False):
     """
     Given a pair of same sized grid images, a set of partial swaps is applied
     between corresponding qubits in each circuit.
-
+    
     Args:
         image0, image1 (Image): RGB encoded images.
         fraction (float): Fraction of swap gates to apply.
         log (bool): If given, a logarithmic decoding is used.
-
+            
     Returns:
         new_image0, new_image1 (Image): RGB encoded images.
     """
@@ -701,12 +654,12 @@ def row_swap_images(image0, image1, fraction, log=False):
     A variant of `swap_images` in which the swap process is done on each line
     of the images individually, rather than with the images as a whole. This
     makes it much faster.
-
+    
     Args:
         image0, image1 (Image): RGB encoded images.
         fraction (float): Fraction of swap gates to apply.
         log (bool): If given, a logarithmic decoding is used.
-
+            
     Returns:
         new_image0, new_image1 (Image): RGB encoded images.
     """
@@ -717,7 +670,7 @@ def row_swap_images(image0, image1, fraction, log=False):
     # create separate images for each row
     rows = [[],[]]
     for j in range(2):
-        for y in range(Ly):
+        for y in range(Ly):   
             rows[j].append(newimage('RGB',(Lx,1)))
             for x in range(Lx):
                 rows[j][y].putpixel((x,0),images[j].getpixel((x,y)))
