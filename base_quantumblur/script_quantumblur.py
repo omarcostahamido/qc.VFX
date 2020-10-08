@@ -57,12 +57,14 @@ def dict_to_array(d, shape):
 	return array
 	
 def to_grey_array(array):
-	H, W, _ = array.shape
-	new_array = np.empty([H, W, 1])
-	for i in range(H):
-		for j in range(W):
-			new_array[i][j][0] = np.sum(array[i][j], dtype='float32')/3
-	return new_array
+  return new_array [:, :, :1]
+# def to_grey_array(array):
+# 	H, W, _ = array.shape
+# 	new_array = np.empty([H, W, 1])
+# 	for i in range(H):
+# 		for j in range(W):
+# 			new_array[i][j][0] = np.sum(array[i][j], dtype='float32')/3
+# 	return new_array
 	
 def prepare_img():
 	global src, a_img, d_img, qc
