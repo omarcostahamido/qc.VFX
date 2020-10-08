@@ -364,7 +364,7 @@ def aheight2circuit(height, log=False, eps=1e-2):
             given height dictionary.
     """
     # get bit strings for the grid
-    Lx,Ly = height.shape
+    Lx,Ly,_ = height.shape
     grid, n = make_grid(Lx,Ly)
 
     # create required state vector
@@ -446,7 +446,6 @@ def probs2height(probs, size=None, log=False):
 
     return height
 
-
 def circuit2height(qc, log=False):
     """
     Extracts a dictionary of heights (or brightnesses) on a grid from
@@ -467,6 +466,73 @@ def circuit2height(qc, log=False):
     probs = _circuit2probs(qc)
     return probs2height(probs, size=eval(qc.name), log=log)
 
+def aprobs2height(probs, size=None, log=False):
+    """
+    Extracts a dictionary of heights (or brightnesses) on a grid from
+    a set of probabilities for the output of a quantum circuit into
+    which the height map has been encoded.
+
+    Args:
+        probs (dict): A dictionary with results from running the circuit.
+            With bit strings as keys and either probabilities or counts as
+            values.
+        size (tuple): Size of the height map to be created. If not given,
+            the size is deduced from the number of qubits (assuming a
+            square image).
+        log (bool): If given, a logarithmic decoding is used.
+
+    Returns:
+        height (np.ndarray): An array which is shaped like the grid,
+        and the values are floats in the range 0 to 1.
+    """
+
+    # get grid info
+    if size:
+        (Lx,Ly) = size
+    else:
+        Lx = int(2**(len(list(probs.keys())[0])/2))
+        Ly = Lx
+    grid,_ = make_grid(Lx,Ly)
+
+    # set height to probs value, rescaled such that the maximum is 1
+    max_h = max( probs.values() )
+    height = np.ndarray((Lx,Ly))
+    for bitstring in probs:
+        if bitstring in grid:
+            height[grid[bitstring]] = float(probs[bitstring])/max_h
+
+    # take logs if required
+    if log:
+        min_h = min([height[pos] for pos in height if height[pos] !=0])
+        # alt_min_h = min([height[pos] for pos in height])
+        base = 1/min_h
+        for pos in height:
+            if height[pos]>0:
+                height[pos] = max(math.log(height[pos]/min_h)/math.log(base),0)
+            else:
+                height[pos] = 0.0
+
+    return height
+
+def acircuit2height(qc, log=False):
+    """
+    Extracts a dictionary of heights (or brightnesses) on a grid from
+    the quantum circuit into which it has been encoded.
+
+    Args:
+        qc (QuantumCircuit): A quantum circuit which encodes a height
+            dictionary. The name attribute should hold the size of
+            the image to be created (as a tuple cast to a string).
+        log (bool): If given, a logarithmic decoding is used.
+
+    Returns:
+        height (dict): A dictionary in which keys are coordinates
+            for points on a grid, and the values are floats in the
+            range 0 to 1.
+    """
+
+    probs = _circuit2probs(qc)
+    return aprobs2height(probs, size=eval(qc.name), log=log)
 
 def combine_circuits(qc0,qc1):
     """
