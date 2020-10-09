@@ -13,7 +13,7 @@ win_txt = '''
 python -m pip install --user --upgrade pip
 
 :: install from requirements file
-py -3.7 -m pip install -r "(reqs)" --target="(target)"
+py -3.7 -m pip install -r "{reqs}" --target="{target}"
 '''
 
 # mac template
@@ -35,7 +35,7 @@ python3 get-pip.py
 python3 -m pip install --user --upgrade pip
 
 # install requirements
-python3 -m pip install -r "(reqs)" --target="(target)"
+python3 -m pip install -r "{reqs}" --target="{target}"
 '''
 
 formated_win_txt		= win_txt.format(reqs=req_file, target=install_target)
