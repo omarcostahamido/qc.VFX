@@ -496,21 +496,21 @@ def aprobs2height(probs, size=None, log=False):
 
     # set height to probs value, rescaled such that the maximum is 1
     max_h = max( probs.values() )
-    height = np.ndarray((Lx,Ly))
+    height = np.ndarray((Lx,Ly,1), dtype="float32")
     for bitstring in probs:
         if bitstring in grid:
-            height[grid[bitstring]] = float(probs[bitstring])/max_h
+            height[grid[bitstring]][0] = probs[bitstring]/max_h
 
     # take logs if required
     if log:
-        min_h = min([height[pos] for pos in height if height[pos] !=0])
+        min_h = min([height[pos][0] for pos in height if height[pos][0] !=0])
         # alt_min_h = min([height[pos] for pos in height])
         base = 1/min_h
         for pos in height:
-            if height[pos]>0:
-                height[pos] = max(math.log(height[pos]/min_h)/math.log(base),0)
+            if height[pos][0]>0:
+                height[pos][0] = max(math.log(height[pos][0]/min_h)/math.log(base),0)
             else:
-                height[pos] = 0.0
+                height[pos][0] = 0.0
 
     return height
 
