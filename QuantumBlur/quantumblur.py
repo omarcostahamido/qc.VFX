@@ -526,9 +526,9 @@ def acircuit2height(qc, log=False):
         log (bool): If given, a logarithmic decoding is used.
 
     Returns:
-        height (dict): A dictionary in which keys are coordinates
-            for points on a grid, and the values are floats in the
-            range 0 to 1.
+        Returns:
+        height (np.ndarray): An array which is shaped like the grid,
+        and the values are floats in the range 0 to 1.
     """
 
     probs = _circuit2probs(qc)
