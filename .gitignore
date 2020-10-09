@@ -1,2 +1,3 @@
 *.pyc
 Dep/python/__pycache__/*
+Dep/python/__pycache__/microqiskit.cpython-37.pyc
