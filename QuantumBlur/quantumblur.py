@@ -436,7 +436,7 @@ def probs2height(probs, size=None, log=False):
     # take logs if required
     if log:
         min_h = min([height[pos] for pos in height if height[pos] !=0])
-        alt_min_h = min([height[pos] for pos in height])
+        # alt_min_h = min([height[pos] for pos in height])
         base = 1/min_h
         for pos in height:
             if height[pos]>0:
