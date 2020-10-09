@@ -1,2 +1,2 @@
 *.pyc
-*.pyc
+Dep/python/__pycache__/*
