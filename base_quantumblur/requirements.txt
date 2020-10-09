@@ -1,2 +1,4 @@
 Pillow
-qiskit
+wheel
+qiskit-terra
+qiskit-aer
