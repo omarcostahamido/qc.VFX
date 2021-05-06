@@ -3,6 +3,7 @@ qc-enabled VFX for a realtime visual programming environment
 
 
 This the repo for a project developped at the Qiskit Hackathon Global.
+See our presentation [here](https://go.och.pw/qc.vfx-yt).
 
 
 
